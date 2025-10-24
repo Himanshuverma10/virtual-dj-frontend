@@ -199,6 +199,7 @@ function RoomPage() {
   };
 
   const handleSuggestTrack = (video) => {
+    console.log("Suggest button clicked for video:", video);
     socket.emit('suggest-track', { 
       roomId, 
       videoId: video.id, 

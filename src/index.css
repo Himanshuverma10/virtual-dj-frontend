@@ -1,0 +1,9 @@
+/* frontend/src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Simple dark mode default */
+body {
+  @apply bg-gray-900 text-gray-100;
+}

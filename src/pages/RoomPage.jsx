@@ -40,6 +40,10 @@ function RoomPage() {
   const [cooldown, setCooldown] = useState(0);
   const [suggestionError, setSuggestionError] = useState(null);
 
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackStatus, setFeedbackStatus] = useState({ sending: false, message: null, isError: false });
+
+
   // --- Main Socket Effect ---
   useEffect(() => {
     if (!socket) return;
@@ -252,6 +256,36 @@ function RoomPage() {
     setUserReady(true); // This will trigger the sync useEffect
   };
 
+  // ... handleReady ke baad ...
+
+// --- YEH NAYA FUNCTION ADD KARO ---
+const handleFeedbackSubmit = async (e) => {
+  e.preventDefault();
+  if (!feedbackText.trim() || !user) return;
+
+  setFeedbackStatus({ sending: true, message: null, isError: false });
+
+  try {
+    const response = await axios.post(`${BACKEND_URL}/api/feedback`, {
+      message: feedbackText,
+      user: { displayName: user.displayName, uid: user.uid },
+      roomId: roomId 
+    });
+
+    setFeedbackStatus({ sending: false, message: response.data.message || 'Feedback sent!', isError: false });
+    setFeedbackText(''); // Clear input
+    // 3 second baad success message hata do
+    setTimeout(() => setFeedbackStatus({ sending: false, message: null, isError: false }), 3000);
+
+  } catch (error) {
+    console.error("Error sending feedback:", error);
+    setFeedbackStatus({ sending: false, message: 'Failed to send feedback.', isError: true });
+    // 3 second baad error message hata do
+    setTimeout(() => setFeedbackStatus({ sending: false, message: null, isError: false }), 3000);
+  }
+};
+// ---
+
   if (!socket) {
     return <div>Connecting...</div>;
   }
@@ -413,6 +447,35 @@ function RoomPage() {
           <div className="flex-grow min-h-0">
             <Chat messages={messages} onSendMessage={handleSendMessage} />
           </div>
+
+            {/* --- YEH NAYA FEEDBACK FORM ADD KARO --- */}
+          <div className="bg-gray-800 rounded-lg shadow-lg p-4 mt-4">
+            <h3 className="text-lg font-semibold text-purple-300 mb-2">Send Feedback</h3>
+            <form onSubmit={handleFeedbackSubmit}>
+              <textarea
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                placeholder="Found a bug? Have a suggestion?"
+                rows="3"
+                className="w-full p-2 mb-2 text-gray-900 rounded-md resize-none"
+                required
+              />
+              <button
+                type="submit"
+                disabled={feedbackStatus.sending}
+                className="w-full p-2 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 disabled:bg-gray-500"
+              >
+                {feedbackStatus.sending ? 'Sending...' : 'Send Feedback'}
+              </button>
+            </form>
+            {feedbackStatus.message && (
+              <p className={`mt-2 text-sm ${feedbackStatus.isError ? 'text-red-400' : 'text-green-400'}`}>
+                {feedbackStatus.message}
+              </p>
+            )}
+          </div>
+      {/* --- END FEEDBACK FORM --- */}
+
         </div>
 
       </div>

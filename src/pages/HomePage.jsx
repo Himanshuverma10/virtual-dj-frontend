@@ -95,12 +95,35 @@ function HomePage() {
           </>
         ) : (
           // --- User is Logged Out ---
+          <>
           <button
             onClick={signInWithGoogle}
             className="w-full p-3 font-bold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition"
           >
             Sign In with Google
           </button>
+
+          {/* --- YEH NAYA FAQ SECTION ADD KARO --- */}
+            <div className="mt-8 text-gray-300 text-sm">
+              <h2 className="text-lg font-semibold text-purple-300 mb-3">Questions?</h2>
+
+              <div className="mb-4">
+                <h3 className="font-semibold text-gray-100 mb-1">1. What is this site for?</h3>
+                <p>This is a virtual party room where you and your friends can listen to YouTube music together in perfect sync!</p>
+              </div>
+
+              <div className="mb-4">
+                <h3 className="font-semibold text-gray-100 mb-1">2. How do I use this site?</h3>
+                <p>Sign in, create a room (you'll get a code), share the code/link with friends. Search for songs, suggest them to the queue, vote for the next track, and chat!</p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-100 mb-1">3. Why should I log in?</h3>
+                <p>Logging in lets you create/join rooms, saves your chat history, and shows your name/photo to friends in the room.</p>
+              </div>
+            </div>
+            {/* --- END FAQ SECTION --- */}
+          </>
         )}
       </div>
     </div>

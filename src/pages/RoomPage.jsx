@@ -271,30 +271,43 @@ function RoomPage() {
   };
   
   const handleFeedbackSubmit = async (e) => {
-      e.preventDefault();
-      if (!feedbackText.trim() || !user) return;
+  e.preventDefault();
+  const currentGuestName = sessionStorage.getItem('guestName');
+  // Ab check karo ki user logged in hai YA guest name hai
+  if (!feedbackText.trim() || (!user && !currentGuestName)) {
+    // Agar na user hai na guest, toh message dikhao (ya kuch mat karo)
+    setFeedbackStatus({ sending: false, message: 'Please log in or enter a guest name to send feedback.', isError: true });
+    setTimeout(() => setFeedbackStatus({ sending: false, message: null, isError: false }), 3000);
+    return; 
+  }
 
-      setFeedbackStatus({ sending: true, message: null, isError: false });
-      
-      try {
-        const response = await axios.post(`${BACKEND_URL}/api/feedback`, {
-          message: feedbackText,
-          user: { displayName: user.displayName, uid: user.uid },
-          roomId: roomId 
-        });
-        
-        setFeedbackStatus({ sending: false, message: response.data.message || 'Feedback sent!', isError: false });
-        setFeedbackText(''); // Clear input
-        // 3 second baad success message hata do
-        setTimeout(() => setFeedbackStatus({ sending: false, message: null, isError: false }), 3000);
+  setFeedbackStatus({ sending: true, message: null, isError: false });
 
-      } catch (error) {
-        console.error("Error sending feedback:", error);
-        setFeedbackStatus({ sending: false, message: 'Failed to send feedback.', isError: true });
-        // 3 second baad error message hata do
-        setTimeout(() => setFeedbackStatus({ sending: false, message: null, isError: false }), 3000);
-      }
-    };
+  // Data taiyyar karo (user ya guest ke hisaab se)
+  const feedbackData = {
+      message: feedbackText,
+      roomId: roomId 
+  };
+  if (user) {
+      feedbackData.user = { displayName: user.displayName, uid: user.uid };
+  } else {
+      feedbackData.guestName = currentGuestName;
+  }
+
+  try {
+    // Naya data backend ko bhejo
+    const response = await axios.post(`${BACKEND_URL}/api/feedback`, feedbackData); 
+
+    setFeedbackStatus({ sending: false, message: response.data.message || 'Feedback sent!', isError: false });
+    setFeedbackText(''); // Clear input
+    setTimeout(() => setFeedbackStatus({ sending: false, message: null, isError: false }), 3000);
+
+  } catch (error) {
+    console.error("Error sending feedback:", error);
+    setFeedbackStatus({ sending: false, message: 'Failed to send feedback.', isError: true });
+    setTimeout(() => setFeedbackStatus({ sending: false, message: null, isError: false }), 3000);
+  }
+};
 
   if (!socket) {
     return <div>Connecting...</div>;

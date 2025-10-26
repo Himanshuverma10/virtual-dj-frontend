@@ -24,11 +24,13 @@ export const AuthProvider = ({ children }) => {
         // Check karo ki kya humein kahin redirect karna tha?
         const origin = location.state?.from; 
         if (origin) {
-          console.log("Login successful, redirecting back to:", origin);
-          navigate(origin, { replace: true }); // Waapis uss page par bhejo
-        }
+              // --- YEH TIMEOUT ADD KARO ---
+              setTimeout(() => {
+                console.log("Login successful, redirecting back to:", origin);
+                navigate(origin, { replace: true }); 
+              }, 0);
       }
-    });
+    }});
 
     // Clean up subscription on unmount
     return () => unsubscribe();

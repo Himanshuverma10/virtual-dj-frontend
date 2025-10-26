@@ -50,9 +50,10 @@ function RoomPage() {
     if (!socket) return;
     
     // Auth Check
-    if (!user) {
-      console.log("No user found, redirecting to home.");
-      navigate('/'); // Redirect to home if not logged in
+    const guestName = sessionStorage.getItem('guestName');
+    if (!user && !guestName) { // Agar logged in bhi nahi hai AUR guest bhi nahi hai
+      console.log("No user or guest found, redirecting to login.");
+      navigate('/', { state: { from: location.pathname } }); 
       return;
     }
 
@@ -108,12 +109,18 @@ function RoomPage() {
     });
 
     // --- Emit Join Room ---
-    socket.emit('join-room', { 
-      roomId, 
-      user: { displayName: user.displayName, uid: user.uid } // Send user object
-    }, (response) => {
+    const joinData = { roomId };
+    if (user) {
+      joinData.user = { displayName: user.displayName, uid: user.uid };
+    } else if (guestName) {
+      joinData.guestName = guestName;
+    }
+
+    socket.emit('join-room', joinData, (response) => {
       if (!response.success) {
         alert(response.message);
+        // Agar guest join fail ho, toh guest name clear karke home bhejo
+        if (guestName) sessionStorage.removeItem('guestName'); 
         navigate('/');
       }
     });
@@ -127,7 +134,7 @@ function RoomPage() {
       socket.off('update-queue');
       socket.off('host-left');
     };
-  }, [socket, roomId, navigate, user]); // Note: amIHost removed
+  }, [socket, roomId, navigate]); // Note: amIHost removed
 
 
   // --- Guest Sync Effect ---
@@ -226,12 +233,16 @@ function RoomPage() {
   };
   
   const handleSendMessage = (message) => {
-    if (!user) return; // Safety check
-    socket.emit('send-message', { 
-      roomId, 
-      message, 
-      user: { displayName: user.displayName, uid: user.uid } // Send user object
-    });
+    const guestName = sessionStorage.getItem('guestName');
+    if (!user && !guestName) return; // Na user, na guest
+
+    const messageData = { roomId, message };
+    if (user) {
+      messageData.user = { displayName: user.displayName, uid: user.uid };
+    } else if (guestName) {
+      messageData.guestName = guestName;
+    }
+    socket.emit('send-message', messageData);
   };
 
   const handleVote = (videoId) => {

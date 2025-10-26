@@ -328,7 +328,7 @@ function RoomPage() {
           </div>
           
           {/* Player */}
-          <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden min-h-[200px]">
             {amIHost !== null && (
               <Player
                 videoId={currentVideoId}
